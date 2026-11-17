@@ -190,6 +190,13 @@ lytMatrix = layout_matrix(
   , c2_2 = c(5,4), c2_3 = c(5,12), c2_4 = c(5,20)
 )
 
+ndNames = 
+  c(t2L = "Lang2", t3L = "Lang3", t4L = "Lang4"
+    , em_2 = "Emo2", em_3 = "Emo3", em_4 = "Emo4"
+    , c_2 = "Cond2", c_3 = "Cond3", c_4 = "Cond4"
+    , c2_2 = "CC2 2", c2_3 = "CC2 3", c2_4 = "CC2 4"
+  )
+
 crvList = list(
   list(from="s._2", to="s._3", new_curve = 1)
   , list(from="s._3", to="s._4", new_curve = 1)
@@ -272,12 +279,17 @@ semPaths(mrfft234.sem, layout=lytMatrix,intercepts=F, whatLabels = "std"
         , "c2_4 ~ c_3"=sigLnWdth, "c2_4 ~ em_3"=sigLnWdth, "c2_4 ~ t3L"=sigLnWdth
       )
   ) |>
+  change_node_label(
+    label_list=ndNames
+  ) |> 
+  
   plot()
 mtext(text = c("Language", "Emotion", "Conduct", "Reading"), side=2, line=-6
       , at = c(.5, 0, -.5, -1))
 mtext(text = c("T2", "T3", "T4"), side=1, line=0, at = c(-.725, 0, .725))
 mtext(text = paste("Age ~ ", c(6,8,11)), side=1, line=1, at = c(-.725, 0, .725))
-title("Pre Modification Indices")
+# title("Pre Modification Indices")
+
 ## 2.1 Measurement Invariance ####
 
 semPaths(mrfft234msinv.sem, layout=lytMatrix,intercepts=F, whatLabels = "std"
@@ -341,7 +353,7 @@ semPaths(mrfft234msinv.sem, layout=lytMatrix,intercepts=F, whatLabels = "std"
       )
   ) |>
   plot()
-title("Measurement Invariance")
+# title("Measurement Invariance")
 mtext(text = c("Language", "Emotion", "Conduct", "Reading"), side=2, line=-6
       , at = c(.5, 0, -.5, -1))
 mtext(text = c("T2", "T3", "T4"), side=1, line=0, at = c(-.725, 0, .725))
