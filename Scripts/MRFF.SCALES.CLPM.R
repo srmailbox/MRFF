@@ -125,6 +125,57 @@ modificationIndices(mrfft234.sem) |> arrange(mi) |> tail(20)
 ### I dunno.
 ### It might also be good to have some measurement invariance
 
+## 1.3 Measurement Invariance ####
+mrfft234.msinv = '
+# Ensure measurement invariance
+  t2Lang =~ a*row_t2+b*eow_t2+c*ace_t2+d*sisat.se_t2
+  t3Lang =~ a*row_t3+b*eow_t3+c*ace_t3+d*sisat.se_t3
+  t4Lang =~ a*row_t4+b*eow_t4+c*ace_t4+d*sisat.se_t4
+
+  # Allow measurement models to change over time.
+  # t2Lang =~ row_t2+eow_t2+ace_t2+sisat.se_t2
+  # t3Lang =~ row_t3+eow_t3+ace_t3+sisat.se_t3
+  # t4Lang =~ row_t4+eow_t4+ace_t4+sisat.se_t4
+  row_t2 ~~ eow_t2
+  row_t3 ~~ eow_t3
+  row_t4 ~~ eow_t4
+  sisat.se_t3~~sisat.se_t2
+  sisat.se_t4~~sisat.se_t3
+  
+
+  ## Autoregressive / Stability Coefficients + Cross-Lagged
+  t3Lang ~ t2Lang + cc2_t2 + con_pt2 + emo_pt2
+  t4Lang ~ t3Lang + cc2_t3 + con_tt3 + emo_tt3
+
+  cc2_t3 ~ cc2_t2 + t2Lang + con_pt2 + emo_pt2
+  cc2_t4 ~ cc2_t3 + t3Lang + con_tt3 + emo_tt3
+
+  con_tt3 ~ con_pt2 + cc2_t2 + t2Lang + emo_pt2
+  con_tt4 ~ con_tt3 + cc2_t3 + t3Lang + emo_tt3
+
+  emo_tt3 ~ con_pt2 + cc2_t2 + t2Lang + emo_pt2
+  emo_tt4 ~ con_tt3 + cc2_t3 + t3Lang + emo_tt3
+  
+  ## Recprocal / Correlational paths
+  # Not sure I can do this, but it sabes me energy.
+  t2Lang + cc2_t2 + con_pt2 + emo_pt2 ~~ t2Lang + cc2_t2 + con_pt2 + emo_pt2
+  t3Lang + cc2_t3 + con_tt3 + emo_tt3 ~~ t3Lang + cc2_t3 + con_tt3 + emo_tt3
+  t4Lang + cc2_t4 + con_tt4 + emo_tt4 ~~ t4Lang + cc2_t4 + con_tt4 + emo_tt4
+'
+
+mrfft234msinv.sem = sem(mrfft234.msinv, mrffAnalysis, missing="fiml")
+
+summary(mrfft234msinv.sem)
+
+fitmeasures(mrfft234msinv.sem, fit_measures = c("rmsea", "srmr", "cfi", "tli"))
+# Not great, but not terrible
+
+modificationIndices(mrfft234.sem) |> arrange(mi) |> tail(20)
+### Modification indices seem to suggest that allowing the language measures to
+### correlate with each other would be good.
+### They also want stability correlations across time for the indicators, but...
+### I dunno.
+
 # 2.0 Figure ####
 ## Setup
 # Ok, so we have a 12 x 5
@@ -226,5 +277,76 @@ mtext(text = c("Language", "Emotion", "Conduct", "Reading"), side=2, line=-6
       , at = c(.5, 0, -.5, -1))
 mtext(text = c("T2", "T3", "T4"), side=1, line=0, at = c(-.725, 0, .725))
 mtext(text = paste("Age ~ ", c(6,8,11)), side=1, line=1, at = c(-.725, 0, .725))
+title("Pre Modification Indices")
+## 2.1 Measurement Invariance ####
 
+semPaths(mrfft234msinv.sem, layout=lytMatrix,intercepts=F, whatLabels = "std"
+         , sizeLat = 9, sizeLat2=4, sizeMan=9, sizeMan2=4
+         , asize=1.5) |> 
+  set_curve(crvList) |> 
+  mark_sig(mrfft234msinv.sem) |> 
+  set_edge_label_position(position=.4) |> 
+  set_edge_label_size(label_size_list=0.01) |> 
+  set_edge_label_size(
+    label_size_list=
+      c(
+        "em_3 ~ t2L"=lblSizeMult, "c_3 ~ t2L"=lblSizeMult, "c2_3 ~ t2L"=lblSizeMult
+        , "t3L ~ em_2"=lblSizeMult, "c_3 ~ em_2"=lblSizeMult, "c2_3 ~ em_2"=lblSizeMult
+        , "t3L ~ c_2"=lblSizeMult, "em_3 ~ c_2"=lblSizeMult, "c2_3 ~ c_2"=lblSizeMult
+        , "t3L ~ c2_2"=lblSizeMult, "em_3 ~ c2_2"=lblSizeMult, "c_3 ~ c2_2"=lblSizeMult
+        , "em_4 ~ t3L"=lblSizeMult, "c_4 ~ t3L"=lblSizeMult, "c2_4 ~ t3L"=lblSizeMult
+        , "t4L ~ em_3"=lblSizeMult, "c_4 ~ em_3"=lblSizeMult, "c2_4 ~ em_3"=lblSizeMult
+        , "t4L ~ c_3"=lblSizeMult, "em_4 ~ c_3"=lblSizeMult, "c2_4 ~ c_3"=lblSizeMult
+        , "t4L ~ c2_3"=lblSizeMult, "em_4 ~ c2_3"=lblSizeMult, "c_4 ~ c2_3"=lblSizeMult
+      )
+    , how = "value"
+  ) |> 
+  set_node_height(values=c(r_2=indHeight, ew_2=indHeight, a_2=indHeight, s._2=indHeight
+                           , r_3=indHeight, ew_3=indHeight, a_3=indHeight, s._3=indHeight
+                           , r_4=indHeight, ew_4=indHeight, a_4=indHeight, s._4=indHeight)) |> 
+  set_node_width(values=c(r_2=indWidth, ew_2=indWidth, a_2=indWidth, s._2=indWidth
+                          , r_3=indWidth, ew_3=indWidth, a_3=indWidth, s._3=indWidth
+                          , r_4=indWidth, ew_4=indWidth, a_4=indWidth, s._4=indWidth)) |> 
+  set_edge_label_position(
+    position_list=
+      c(
+        "em_3 ~ t2L"=lblPos, "c_3 ~ t2L"=lblPos, "c2_3 ~ t2L"=lblPos
+        , "t3L ~ em_2"=lblPos2, "c_3 ~ em_2"=lblPos, "c2_3 ~ em_2"=lblPos2
+        , "t3L ~ c_2"=lblPos2, "em_3 ~ c_2"=lblPos, "c2_3 ~ c_2"=lblPos2
+        , "t3L ~ c2_2"=.25, "em_3 ~ c2_2"=lblPos, "c_3 ~ c2_2"=lblPos
+        , "em_4 ~ t3L"=lblPos, "c_4 ~ t3L"=lblPos, "c2_4 ~ t3L"=lblPos
+        , "t4L ~ em_3"=lblPos2, "c_4 ~ em_3"=lblPos, "c2_4 ~ em_3"=lblPos2
+        , "t4L ~ c_3"=lblPos2, "em_4 ~ c_3"=lblPos, "c2_4 ~ c_3"=lblPos2
+        , "t4L ~ c2_3"=.25, "em_4 ~ c2_3"=lblPos, "c_4 ~ c2_3"=lblPos
+      )
+  ) |>
+  set_edge_color(
+    color_list = 
+      c(
+        # t2 to t3
+        "t3L ~ em_2"=sigEdgeCol, "t3L ~ c2_2"=sigEdgeCol
+        , "c_3 ~ c2_2"=sigEdgeCol
+        , "c2_3 ~ t2L"=sigEdgeCol, "c2_3 ~ em_2"=sigEdgeCol
+        # t3 to t4
+        , "c2_4 ~ c_3"=sigEdgeCol, "c2_4 ~ em_3"=sigEdgeCol, "c2_4 ~ t3L"=sigEdgeCol
+      )
+  ) |>
+  set_edge_line_width(
+    line_width_list = 
+      c(
+        # t2 to t3
+        "c2_3 ~ t2L"=sigLnWdth
+        # t3 to t4
+        , "c2_4 ~ c_3"=sigLnWdth, "c2_4 ~ em_3"=sigLnWdth, "c2_4 ~ t3L"=sigLnWdth
+      )
+  ) |>
+  plot()
+title("Measurement Invariance")
+mtext(text = c("Language", "Emotion", "Conduct", "Reading"), side=2, line=-6
+      , at = c(.5, 0, -.5, -1))
+mtext(text = c("T2", "T3", "T4"), side=1, line=0, at = c(-.725, 0, .725))
+mtext(text = paste("Age ~ ", c(6,8,11)), side=1, line=1, at = c(-.725, 0, .725))
 
+## Statistically the model witout measurement invariance is better, but perhaps
+## more importantly there's no good reason to argue for measurement invariance
+## and even more importantly, it doesn't change anything.
