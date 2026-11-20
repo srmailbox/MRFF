@@ -12,7 +12,15 @@
 # Author: Serje Robidoux
 # Created: 2026-10-22
 # CHANGELOG: - note this has a github. (Well, it should TODO)
-# 
+
+# NOTES: ####
+# cc2totaltX is meant to be the total of the irregs, regs, and nw total items
+#   but there seems to be an arbitrary error in it somewhere that just adds some
+#   particular in t2, less in t3, and not at all in t4.
+# SDQ: we have teacher at t1, parent at t2, teacher at t3, child & teacher at t4,
+#   teacher at t5.
+#   teacher t1 and parent t2 are at basically the same age, though... I think
+
 # 0.0 set up ####
 
 # 1.0 Import Data ####
@@ -43,22 +51,18 @@ longDat = longRaw |>
          , starts_with("eowpvt") # Expressive Vocab
          , starts_with("sentrep") # Sentence repetition
          , starts_with("narrativecomp") # language comprehension
-         , starts_with("cc2total") # CC2 Reading
+         , starts_with("cc2") # CC2 Reading
+         , -ends_with("t1") # Drop the screening time point since it overlaps with t2 so much
+            # except that I want the t1 (teacher) sdq to use at "t2".
          , starts_with("sdqemotion") # SDQ Emotional Problems
          , starts_with("sdqconduct") # SDQ Conduct Problems
-         , starts_with("sdqconduct") # SDQ Conduct Problems
-         , -ends_with("t1") # Drop the screening time point since it overlaps with t2 so much
          )
 
 # 2.0 Merge data #### 
-#TODO: the longDat and scrnDat child_number values do not seem to be associated,
-# so for now, I'm just going to ignore EAL and use the gender from the longDat.
-# Once I hear back from C Norbury, maybe we can add the EAL stuff.
-# 
 # Per C Norbury, the child_number values are not related to each other.
-# Not sure how to get the EAL value then.
+# Ultimately we just want the 529 kids who were followed longitudinally, which
+# was restricted to non-EAL
 
-# mrffDat = merge(longDat, scrnDat, all.x=T, all.y=F, by="child_number")
 mrffDat = longDat
 
 # 3.0 Data adjustments ####
@@ -84,3 +88,5 @@ mrffDat = mrffDat |>
 # # best ignored. This doesn't actually make sense, since all of the kids have
 # # positive lag1 values, and the lag1 value is meant to be days between t1 and
 # # t2.
+# 
+
