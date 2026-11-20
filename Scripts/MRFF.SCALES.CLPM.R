@@ -25,12 +25,12 @@ if (!exists("mrffDat")) source("Scripts/MRFF.SCALES.Data.R")
 ## 0.2 rename stuff ####
 
 mrffAnalysis = mrffDat |> 
-  rename_with(~gsub("_", "_", .x), starts_with("cc2")) |> 
+  rename_with(~gsub("total", "_", .x)) |> 
   rename_with(~tolower(gsub("(SDQ|sdq)(.{3}).*[r_]", "\\2_", .x)), starts_with("SDQ")) |> 
   rename_with(~tolower(gsub("([re])ow.*t", "\\1ow_t", .x)), matches("[er]ow")) |> 
   rename_with(~tolower(gsub("narrativecomp(.{0,2}).*_", "ace.\\1_", .x)), matches("narrativecomp")) |> 
+  rename_with(~tolower(gsub("sentrep(.{0,2}).*_", "sisat.\\1_", .x)), matches("sentrep")) |> 
   rename_with(~gsub("\\._", "_", .x)) |> 
-  rename_with(~tolower(gsub("sentrep(.{2}).*_", "sisat.\\1_", .x)), matches("sentrep")) |> 
   mutate(gndrM = ifelse(q5gender=="Male", 1, 0))
 
 
@@ -420,7 +420,6 @@ lytMatrix = layout_matrix(
   , cc2n_2 = c(11,2), cc2rg_2 = c(11,4), cc2rr_2 = c(11,6)
   , cc2n_3 = c(11,10), cc2rg_3 = c(11,12), cc2rr_3 = c(11,14)
   , cc2n_4 = c(11,18), cc2rg_4 = c(11,20), cc2rr_4 = c(11,22)
-  
 )
 
 ndNames = 
@@ -468,7 +467,7 @@ semPaths(mrfft1234.sem, layout=lytMatrix,intercepts=F, whatLabels = "std"
     label_size_list=
       c(
         "em_3 ~ t2L"=lblSizeMult, "c_3 ~ t2L"=lblSizeMult, "t3Read ~ t2L"=lblSizeMult
-        , "t3L ~ em_2"=lblSizeMult, "c_3 ~ em_2"=lblSizeMult, "t3Read ~ em_2"=lblSizeMult
+        , "t3L ~ e_1"=lblSizeMult, "c_3 ~ e_1"=lblSizeMult, "t3Read ~ e_1"=lblSizeMult
         , "t3L ~ c_2"=lblSizeMult, "em_3 ~ c_2"=lblSizeMult, "t3Read ~ c_2"=lblSizeMult
         , "t3L ~ t2Read"=lblSizeMult, "em_3 ~ t2Read"=lblSizeMult, "c_3 ~ t2Read"=lblSizeMult
         , "em_4 ~ t3L"=lblSizeMult, "c_4 ~ t3L"=lblSizeMult, "t4Read ~ t3L"=lblSizeMult
@@ -504,7 +503,7 @@ semPaths(mrfft1234.sem, layout=lytMatrix,intercepts=F, whatLabels = "std"
     position_list=
       c(
         "em_3 ~ t2L"=lblPos, "c_3 ~ t2L"=lblPos, "t3Read ~ t2L"=lblPos
-        , "t3L ~ e_2"=lblPos2, "c_3 ~ e_2"=lblPos, "t3Read ~ e_2"=lblPos2
+        , "t3L ~ e_1"=lblPos2, "c_3 ~ e_1"=lblPos, "t3Read ~ e_1"=lblPos2
         , "t3L ~ c_2"=lblPos2, "em_3 ~ c_2"=lblPos, "t3Read ~ c_2"=lblPos2
         , "t3L ~ t2Read"=.25, "em_3 ~ t2Read"=lblPos, "c_3 ~ t2Read"=lblPos
         , "em_4 ~ t3L"=lblPos, "c_4 ~ t3L"=lblPos, "t4Read ~ t3L"=lblPos
